@@ -2,13 +2,14 @@ class zcl_abap_graph_utilities definition public final create public .
   public section.
     class-methods: quoteifneeded importing raw            type string
                                  returning value(escaped) type string,
-      show_in_browser importing graph type ref to zcl_abap_graph ,
+      show_in_browser importing graph    type ref to zcl_abap_graph
+                                comments type string optional,
       show_in_viewer  importing graph  type ref to zcl_abap_graph
                                 viewer type ref to cl_gui_html_viewer,
       get_temp_file_url  returning value(r_result) type string.
-  PRIVATE SECTION.
-    CLASS-DATA uploadpath TYPE string.
-    CLASS-DATA downloadpath TYPE string.
+  private section.
+    class-data uploadpath type string.
+    class-data downloadpath type string.
 endclass.
 
 
@@ -33,7 +34,7 @@ class zcl_abap_graph_utilities implementation.
           itab     type table of string.
 
     url = get_temp_file_url( ).
-    contents = graph->generate_html_wrapper( ).
+    contents = graph->generate_html_wrapper( comments = comments ).
     append contents to itab.
     if url <>  ''.
       call function 'GUI_DOWNLOAD'

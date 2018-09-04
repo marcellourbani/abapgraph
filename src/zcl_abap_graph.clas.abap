@@ -10,8 +10,9 @@ class zcl_abap_graph definition public final create private .
         value(r_result) type ref to zcl_abap_graph.
     methods:
       generate_html_wrapper
-        importing baseurl        type string default c_browser_url
-        returning value(wrapper) type string,
+        importing baseurl         type string default c_browser_url
+                  value(comments) type string optional
+        returning value(wrapper)  type string,
 
       generate returning value(r_result) type string,
       addnode importing node type ref to zif_abap_graph_node,
@@ -61,10 +62,11 @@ class zcl_abap_graph implementation.
     split graph at cl_abap_char_utilities=>newline into table graphlines.
 
     concatenate  '<iframe src="' baseurl '?useparentsource=true">' into iframe.
-
+    concatenate '<!-' comments '->' into comments.
     append:
   '<!DOCTYPE html>' to lines,
   '<html lang="en">' to lines,
+  comments to lines,
   '' to lines,
   '<head>' to lines,
   '    <meta charset="utf-8">' to lines,
