@@ -34,8 +34,9 @@ class zcl_abap_graph_node_simple implementation.
     endif.
 
     create object r_result.
-    r_result->id = id.
+    r_result->id = zcl_abap_graph_utilities=>quoteifneeded( id ).
     r_result->attributes = zcl_abap_graph_attr=>create( ).
+    label = cl_http_utility=>escape_html( label ).
     label = zcl_abap_graph_utilities=>quoteifneeded( label ).
     shape = zcl_abap_graph_utilities=>quoteifneeded( shape ).
     r_result->attributes->set( name  = 'label' value = label ).

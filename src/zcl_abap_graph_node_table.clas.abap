@@ -33,6 +33,7 @@ class zcl_abap_graph_node_table definition public final create private .
         id              type string
         label           type string optional
         graph           type ref to zcl_abap_graph
+        escape          type abap_bool default abap_true
       returning
         value(r_result) type ref to zcl_abap_graph_node_table .
     methods:
@@ -41,7 +42,8 @@ class zcl_abap_graph_node_table definition public final create private .
                   columnid           type string
                   row                type i
                   value              type string
-                  partid             type string optional
+                  escape             type abap_bool default abap_true
+                  value(partid)      type string optional
                   attributes         type ref to zcl_abap_graph_attr optional
                 returning
                   value(componentid) type string .
@@ -96,18 +98,23 @@ class zcl_abap_graph_node_table implementation.
       zcx_abap_graph=>raise( 'A node requires valid parent graph' ).
     endif.
     create object r_result.
-    r_result->id = id.
+    r_result->id = zcl_abap_graph_utilities=>quoteifneeded( id ).
     r_result->graph = graph.
     r_result->attributes = zcl_abap_graph_attr=>create( ).
-    r_result->mainlabel  = label .
+    if escape = abap_true.
+      r_result->mainlabel  = cl_http_utility=>escape_html( label ).
+    else.
+      r_result->mainlabel  = label .
+    endif.
     r_result->attributes->set( name  = 'shape' value = 'plaintext' ).
     graph->addnode( r_result ).
+
   endmethod.
 
 
   method getcomp.
     if partid <> ''.
-      concatenate ' port="' partid '" ' into r_result respecting blanks.
+      concatenate ' port=' partid ' ' into r_result respecting blanks.
     endif.
   endmethod.
 
@@ -150,6 +157,7 @@ class zcl_abap_graph_node_table implementation.
 
     check_column( columnid ).
     if partid <> ''.
+      partid = zcl_abap_graph_utilities=>quoteifneeded( partid ).
       concatenate id ':' partid into componentid.
       "will raise an exception for invalid/already used IDs
       graph->register_id( componentid ).
@@ -166,7 +174,11 @@ class zcl_abap_graph_node_table implementation.
     delete table <line> with table key columnid = columnid.
     cell-columnid   = columnid.
     cell-partid     = partid.
-    cell-value      = value .
+    if escape = abap_true.
+      cell-value      = cl_http_utility=>escape_html( value ).
+    else.
+      cell-value      = value .
+    endif.
     cell-attributes = attributes.
     insert cell into table <line>.
 
@@ -180,7 +192,11 @@ class zcl_abap_graph_node_table implementation.
     append initial line to columns assigning <column>.
 
     <column>-id = id.
-    <column>-name = name .
+    if name = ''.
+      <column>-name = id .
+    else.
+      <column>-name = name .
+    endif.
   endmethod.
 
 
@@ -188,7 +204,7 @@ class zcl_abap_graph_node_table implementation.
     data: parent type string,
           child  type string.
     if graph->has_id( i_source ) = abap_true.
-      find regex '([^:]*):([^:]*)' in i_source submatches parent child.
+      find regex '(".+"):(".+")$' in i_source submatches parent child.
     endif.
     if sy-subrc <> 0 or parent <> id.
       zcx_abap_graph=>raise( 'Source must be a valid part of the node' ).

@@ -26,11 +26,13 @@ class zcl_abap_graph_node_record  definition public final create private .
     class-methods create importing id              type string
                                    label           type string optional
                                    graph           type ref to zcl_abap_graph
+                                   escape          type abap_bool default abap_true
                          returning value(r_result) type ref to zcl_abap_graph_node_record.
     methods: addcomponent importing name               type string
                                     value              type string
+                                    escape             type abap_bool default abap_true
                                     visibility         type string optional
-                                    partid             type string optional
+                                    value(partid)      type string optional
                           returning value(componentid) type string.
 
   protected section.
@@ -63,10 +65,14 @@ class zcl_abap_graph_node_record implementation.
       zcx_abap_graph=>raise( 'A node requires valid parent graph' ).
     endif.
     create object r_result.
-    r_result->id = id.
+    r_result->id = zcl_abap_graph_utilities=>quoteifneeded( id ).
     r_result->graph = graph.
     r_result->attributes = zcl_abap_graph_attr=>create( ).
-    r_result->mainlabel =  label .
+    if escape = abap_true.
+      r_result->mainlabel = cl_http_utility=>escape_html( label ).
+    else.
+      r_result->mainlabel = label .
+    endif.
     r_result->attributes->set( name  = 'shape' value = 'plaintext' ).
     graph->addnode( r_result ).
   endmethod.
@@ -76,8 +82,7 @@ class zcl_abap_graph_node_record implementation.
   endmethod.
 
   method zif_abap_graph_node~linkto.
-    data: partid type string,
-          mainid type string.
+    data: esclabel type string.
     field-symbols: <link> like line of links.
 
     append initial line to links assigning <link>.
@@ -92,7 +97,8 @@ class zcl_abap_graph_node_record implementation.
     endif.
     <link>-childid    = destination.
     <link>-attributes = zcl_abap_graph_attr=>create( ).
-    <link>-attributes->set( name  = 'label' value = label ).
+    esclabel = cl_http_utility=>escape_html( label ).
+    <link>-attributes->set( name  = 'label' value = esclabel ).
     <link>-attributes->set( name  = 'color' value = color ).
     <link>-attributes->set( name  = 'fontcolor' value = color ).
   endmethod.
@@ -142,6 +148,7 @@ class zcl_abap_graph_node_record implementation.
     field-symbols: <comp> like line of components.
 
     if partid <> ''.
+      partid = zcl_abap_graph_utilities=>quoteifneeded( partid ).
       concatenate id ':' partid into componentid.
       "will raise an exception for invalid/already used IDs
       graph->register_id( componentid ).
@@ -151,7 +158,11 @@ class zcl_abap_graph_node_record implementation.
 
     <comp>-name       = name.
     <comp>-partid     = partid.
-    <comp>-value      = value.
+    if escape = abap_true.
+      <comp>-value      = cl_http_utility=>escape_html( value ).
+    else.
+      <comp>-value      = value .
+    endif.
     <comp>-visibility = visibility.
 
 
@@ -162,7 +173,7 @@ class zcl_abap_graph_node_record implementation.
     data: parent type string,
           child  type string.
     if graph->has_id( i_source ) = abap_true.
-      find regex '([^:]*):([^:]*)' in i_source submatches parent child.
+      find regex '(".+"):(".+")$' in i_source submatches parent child.
     endif.
     if sy-subrc <> 0 or parent <> id.
       zcx_abap_graph=>raise( 'Source must be a valid part of the node' ).
@@ -172,7 +183,7 @@ class zcl_abap_graph_node_record implementation.
 
   method getcomp.
     if partid <> ''.
-      concatenate ' port="' partid '" ' into r_result respecting blanks.
+      concatenate ' port=' partid ' ' into r_result respecting blanks.
     endif.
   endmethod.
 

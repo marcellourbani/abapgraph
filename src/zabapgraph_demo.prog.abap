@@ -51,9 +51,9 @@ form main.
       node2  = zcl_abap_graph_node_simple=>create( id = '2' label = 'node 2' graph = graph ).
 
 
-      node4 = zcl_abap_graph_node_table=>create( graph = graph id = 'table1' label = 'Table 1' ).
+      node4 = zcl_abap_graph_node_table=>create( graph = graph id = '"{table1}"' label = 'Table 1' ).
       node4->setcolumn( id = 'COL1' name = 'First column' ).
-      node4->setcolumn( id = 'COL2' name = 'Second column' ).
+      node4->setcolumn( id = 'COL2' name = 'Second <s>column</s>' ).
       node4->setcolumn( id = 'COL3' ).
       node4->setcell( columnid = 'COL1' row = 3 value = '3,1' ).
       node4->setcell( columnid = 'COL3' row = 1 value = '1,3' ).
@@ -70,6 +70,8 @@ form main.
           color       = 'green'
           label       = 'to table center'
           source      = partid2 ).
+
+
       if p_screen is initial.
         zcl_abap_graph_utilities=>show_in_browser( graph ).
       else.

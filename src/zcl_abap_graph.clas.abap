@@ -20,7 +20,9 @@ class zcl_abap_graph definition public final create private .
              returning value(r_result) type abap_bool,
       register_id
         importing
-          id type string.
+          id type string,
+      get_node importing value(nodeid) type string
+               returning value(node)   type ref to zif_abap_graph_node.
 
   protected section.
   private section.
@@ -62,7 +64,7 @@ class zcl_abap_graph implementation.
     split graph at cl_abap_char_utilities=>newline into table graphlines.
 
     concatenate  '<iframe src="' baseurl '?useparentsource=true">' into iframe.
-    concatenate '<!-' comments '->' into comments.
+    concatenate '<!--' comments '-->' into comments.
     append:
   '<!DOCTYPE html>' to lines,
   '<html lang="en">' to lines,
@@ -158,7 +160,7 @@ class zcl_abap_graph implementation.
 
 
   method get_defaults.
-    data:graphdefaults type string.
+    data: graphdefaults type string.
 
     r_result = default_node_attr->render( ).
     if not r_result is initial.
@@ -190,6 +192,24 @@ class zcl_abap_graph implementation.
     endif.
 
     insert id into table valid_ids.
+  endmethod.
+
+
+  method get_node.
+    field-symbols: <node> like line of nodes.
+    nodeid = zcl_abap_graph_utilities=>quoteifneeded( nodeid ).
+    read table valid_ids with table key table_line = nodeid transporting no fields.
+
+    if sy-subrc = 0.
+      loop at nodes assigning <node>.
+        if <node>->id = nodeid.
+          node = <node>.
+          exit.
+        endif.
+      endloop.
+
+    endif.
+
   endmethod.
 
 endclass.
