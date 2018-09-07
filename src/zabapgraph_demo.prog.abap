@@ -45,9 +45,9 @@ form main.
       node3->addcomponent( name = 'First' value = 'foo' ).
       node3->addcomponent( name = 'Second' value = 'bar'  ).
       partid1 = node3->addcomponent( name = 'protected' value = 'protectedv' partid = 'p3'
-        visibility = zcl_abap_graph_node_record=>visprotected  ).
+        bgcolor = 'yellow'  ).
       partid2 = node3->addcomponent( name = 'private' value = 'privatev' partid = 'p4'
-        visibility = zcl_abap_graph_node_record=>visprivate ).
+        bgcolor = 'red' ).
       node2  = zcl_abap_graph_node_simple=>create( id = '2' label = 'node 2' graph = graph ).
 
 

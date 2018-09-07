@@ -15,14 +15,11 @@ class zcl_abap_graph_node_record  definition public final create private .
     types: begin of ty_component,
              name       type string,
              value      type string,
-             visibility type string,
+             bgcolor    type string,
              partid     type string,
            end of ty_component,
            tt_component type table of ty_component.
 
-    constants: visprivate   type string value 'PRIVATE',
-               visprotected type string value 'PROTECTED',
-               vispublic    type string value 'PUBLIC'.
     class-methods create importing id              type string
                                    label           type string optional
                                    graph           type ref to zcl_abap_graph
@@ -31,7 +28,7 @@ class zcl_abap_graph_node_record  definition public final create private .
     methods: addcomponent importing name               type string
                                     value              type string
                                     escape             type abap_bool default abap_true
-                                    visibility         type string optional
+                                    bgcolor            type string optional
                                     value(partid)      type string optional
                           returning value(componentid) type string.
 
@@ -41,11 +38,6 @@ class zcl_abap_graph_node_record  definition public final create private .
     data: links      type tt_link,
           components type tt_component.
 
-    methods viscolor
-      importing
-        value(i_visibility) type string
-      returning
-        value(r_result)     type string.
     methods validatesource
       importing
         i_source type string.
@@ -117,7 +109,11 @@ class zcl_abap_graph_node_record implementation.
 
     loop at components assigning <comp>.
       comp = getcomp( <comp>-partid ).
-      color = viscolor( <comp>-visibility ).
+      if <comp>-bgcolor <> ''.
+        concatenate ' bgcolor="' <comp>-bgcolor '"' into color respecting blanks.
+      else.
+        color = ''.
+      endif.
 
       agexpand '{temp}\n<tr><td{color}>{<comp>-name}</td><td{color}{comp}>{<comp>-value}</td></tr>' temp.
     endloop.
@@ -127,20 +123,6 @@ class zcl_abap_graph_node_record implementation.
     temp = attributes->render( ).
 
     agexpand '{id}{temp};' dotsource.
-
-  endmethod.
-
-
-  method viscolor.
-
-    case i_visibility.
-      when visprivate.
-        r_result = ' BGCOLOR="red"'.
-      when visprotected.
-        r_result = ' BGCOLOR="yellow"'.
-      when others.
-        r_result = ''.
-    endcase.
 
   endmethod.
 
@@ -163,7 +145,7 @@ class zcl_abap_graph_node_record implementation.
     else.
       <comp>-value      = value .
     endif.
-    <comp>-visibility = visibility.
+    <comp>-bgcolor = bgcolor.
 
 
   endmethod.
