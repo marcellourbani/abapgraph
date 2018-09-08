@@ -13,12 +13,15 @@ class zcl_abap_graph_node_record  definition public final create private .
              tt_node     for zif_abap_graph_node~tt_node ,
              ty_nod      for zif_abap_graph_node~ty_node .
     types: begin of ty_component,
-             name       type string,
-             value      type string,
-             bgcolor    type string,
-             partid     type string,
+             name            type string,
+             value           type string,
+             partid          type string,
+             nameattributes  like attributes,
+             valueattributes like attributes,
            end of ty_component,
            tt_component type table of ty_component.
+
+    data: headerattr  like attributes read-only.
 
     class-methods create importing id              type string
                                    label           type string optional
@@ -30,7 +33,10 @@ class zcl_abap_graph_node_record  definition public final create private .
                                     escape             type abap_bool default abap_true
                                     bgcolor            type string optional
                                     value(partid)      type string optional
+                                    nameattributes     like attributes optional
+                                    valueattributes    like attributes optional
                           returning value(componentid) type string.
+
 
   protected section.
     data: mainlabel type string.
@@ -66,6 +72,7 @@ class zcl_abap_graph_node_record implementation.
       r_result->mainlabel = label .
     endif.
     r_result->attributes->set( name  = 'shape' value = 'plaintext' ).
+    r_result->headerattr = zcl_abap_graph_attr=>create( abap_true ).
     graph->addnode( r_result ).
   endmethod.
 
@@ -96,26 +103,25 @@ class zcl_abap_graph_node_record implementation.
   endmethod.
 
   method zif_abap_graph_node~render.
-    data: temp  type string,
-          color type string,
-          comp  type string.
+    data: temp      type string,
+          nameattr  type string,
+          valueattr type string,
+          comp      type string.
 
     field-symbols: <comp> like line of components.
     agdefinitions.
 
-    agexpand '<<table border="0" cellborder="1" cellspacing="0">\n<tr><td colspan="2">{mainlabel}</td></tr>'
+    temp = headerattr->render( ).
+
+    agexpand '<<table border="0" cellborder="1" cellspacing="0">\n<tr><td colspan="2" {temp}>{mainlabel}</td></tr>'
              temp.
 
 
     loop at components assigning <comp>.
       comp = getcomp( <comp>-partid ).
-      if <comp>-bgcolor <> ''.
-        concatenate ' bgcolor="' <comp>-bgcolor '"' into color respecting blanks.
-      else.
-        color = ''.
-      endif.
-
-      agexpand '{temp}\n<tr><td{color}>{<comp>-name}</td><td{color}{comp}>{<comp>-value}</td></tr>' temp.
+      nameattr = <comp>-nameattributes->render( ).
+      valueattr = <comp>-valueattributes->render( ).
+      agexpand '{temp}\n<tr><td{nameattributes}>{<comp>-name}</td><td{valueattributes}{comp}>{<comp>-value}</td></tr>' temp.
     endloop.
     agexpand '{temp}\n</table>>' temp.
 
@@ -127,6 +133,7 @@ class zcl_abap_graph_node_record implementation.
   endmethod.
 
   method addcomponent.
+
     field-symbols: <comp> like line of components.
 
     if partid <> ''.
@@ -145,8 +152,20 @@ class zcl_abap_graph_node_record implementation.
     else.
       <comp>-value      = value .
     endif.
-    <comp>-bgcolor = bgcolor.
-
+    if nameattributes is bound.
+      <comp>-nameattributes = nameattributes.
+    else.
+      <comp>-nameattributes = zcl_abap_graph_attr=>create( abap_true ).
+    endif.
+    if valueattributes is bound.
+      <comp>-valueattributes = valueattributes.
+    else.
+      <comp>-valueattributes = zcl_abap_graph_attr=>create( abap_true ).
+    endif.
+    if bgcolor <> ''.
+      <comp>-nameattributes->set( name  = 'bgcolor' value = bgcolor ).
+      <comp>-valueattributes->set( name  = 'bgcolor' value = bgcolor ).
+    endif.
 
   endmethod.
 

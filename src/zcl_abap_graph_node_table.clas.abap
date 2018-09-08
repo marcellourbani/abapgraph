@@ -28,6 +28,9 @@ class zcl_abap_graph_node_table definition public final create private .
       end of ty_cell,
       ty_line type hashed table of ty_cell with unique key columnid.
 
+    data: headerattr like attributes,
+          titleattr  like attributes.
+
     class-methods create
       importing
         id              type string
@@ -107,6 +110,8 @@ class zcl_abap_graph_node_table implementation.
       r_result->mainlabel  = label .
     endif.
     r_result->attributes->set( name  = 'shape' value = 'plaintext' ).
+    r_result->headerattr = zcl_abap_graph_attr=>create( abap_true ).
+    r_result->titleattr = zcl_abap_graph_attr=>create( abap_true ).
     graph->addnode( r_result ).
 
   endmethod.
@@ -129,7 +134,7 @@ class zcl_abap_graph_node_table implementation.
     if sy-subrc = 0.
       porttext = getcomp(  <cell>-partid ).
       if <cell>-attributes is bound.
-        attrtext = <cell>-attributes->render( abap_true ).
+        attrtext = <cell>-attributes->render(  ).
         agexpand '<td {attrtext}{porttext}>{<cell>-value}</td>' r_result.
       else.
         agexpand '<td{porttext}>{<cell>-value}</td>' r_result.
@@ -192,11 +197,7 @@ class zcl_abap_graph_node_table implementation.
     append initial line to columns assigning <column>.
 
     <column>-id = id.
-    if name = ''.
-      <column>-name = id .
-    else.
-      <column>-name = name .
-    endif.
+    <column>-name = name.
   endmethod.
 
 
@@ -241,11 +242,12 @@ class zcl_abap_graph_node_table implementation.
 
 
   method zif_abap_graph_node~render.
-    data: temp     type string,
-          comp     type string,
-          numcols  type i,
-          item     type string,
-          cellcode type string.
+    data: temp       type string,
+          comp       type string,
+          numcols    type string,
+          item       type string,
+          cellcode   type string,
+          attrs      type string.
     field-symbols: <column> like line of columns,
                    <line>   like line of cells.
 
@@ -256,18 +258,21 @@ class zcl_abap_graph_node_table implementation.
     agexpand '<<table border="0" cellborder="1" cellspacing="0">' dotsource.
     "table title/name
     if mainlabel <> ''.
-      agexpand '{dotsource}<tr><td colspan="{numcols}">{mainlabel}</td></tr>' dotsource.
+      headerattr->set( name = 'colspan' value = numcols ).
+      attrs = headerattr->render( ).
+      agexpand '{dotsource}<tr><td{attrs}>{mainlabel}</td></tr>' dotsource.
     endif.
 
     "column headers
     if hasheaders( ) = abap_true.
       temp = ''.
+      attrs = titleattr->render( ).
       loop at columns assigning <column>.
         item = <column>-name.
         if <column>-name is initial.
           item = <column>-id.
         endif.
-        agexpand '{temp}<td>{item}</td>' temp.
+        agexpand '{temp}<td{attrs}>{item}</td>' temp.
       endloop.
       agexpand '{dotsource}\n<tr>{temp}</tr>' dotsource.
     endif.

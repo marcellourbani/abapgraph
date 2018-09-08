@@ -29,10 +29,10 @@ endclass.
 *
 form main.
   data: gv_html_viewer type ref to cl_gui_html_viewer,
-        node1          type ref to zcl_abap_graph_node_simple,
-        node2          type ref to zcl_abap_graph_node_simple,
-        node3          type ref to zcl_abap_graph_node_record,
-        node4          type ref to zcl_abap_graph_node_table,
+        simplenode1    type ref to zcl_abap_graph_node_simple,
+        simplenode2    type ref to zcl_abap_graph_node_simple,
+        recordnode     type ref to zcl_abap_graph_node_record,
+        tablenode      type ref to zcl_abap_graph_node_table,
         partid1        type string,
         partid2        type string,
         cellattrs      type ref to zcl_abap_graph_attr,
@@ -40,33 +40,36 @@ form main.
 
   try.
       graph = zcl_abap_graph=>create( ).
-      node1  = zcl_abap_graph_node_simple=>create( id = '1' label = 'node 1' graph = graph ).
-      node3 = zcl_abap_graph_node_record=>create( id = '3' label = 'record'  graph = graph ).
-      node3->addcomponent( name = 'First' value = 'foo' ).
-      node3->addcomponent( name = 'Second' value = 'bar'  ).
-      partid1 = node3->addcomponent( name = 'protected' value = 'protectedv' partid = 'p3'
-        bgcolor = 'yellow'  ).
-      partid2 = node3->addcomponent( name = 'private' value = 'privatev' partid = 'p4'
-        bgcolor = 'red' ).
-      node2  = zcl_abap_graph_node_simple=>create( id = '2' label = 'node 2' graph = graph ).
+      simplenode1  = zcl_abap_graph_node_simple=>create( id = '1' label = 'node 1' graph = graph ).
+      simplenode2  = zcl_abap_graph_node_simple=>create( id = '2' label = 'node 2' graph = graph ).
+
+      recordnode = zcl_abap_graph_node_record=>create( id = '3' label = '<b>record</b>'  graph = graph escape = abap_false ).
+      recordnode->addcomponent( name = 'First' value = 'foo' ).
+      recordnode->addcomponent( name = 'Second' value = 'bar'  ).
+      recordnode->headerattr->set( name = 'bgcolor' value = 'lavender' ).
+
+      partid1 = recordnode->addcomponent( name = 'protected' value = 'protectedv' partid = 'p3'  bgcolor = 'yellow'  ).
+      partid2 = recordnode->addcomponent( name = 'private'   value = 'privatev'   partid = 'p4'  bgcolor = 'red' ).
 
 
-      node4 = zcl_abap_graph_node_table=>create( graph = graph id = '"{table1}"' label = 'Table 1' ).
-      node4->setcolumn( id = 'COL1' name = 'First column' ).
-      node4->setcolumn( id = 'COL2' name = 'Second <s>column</s>' ).
-      node4->setcolumn( id = 'COL3' ).
-      node4->setcell( columnid = 'COL1' row = 3 value = '3,1' ).
-      node4->setcell( columnid = 'COL3' row = 1 value = '1,3' ).
-      cellattrs = zcl_abap_graph_attr=>create( ).
+      tablenode = zcl_abap_graph_node_table=>create( graph = graph id = '"{table1}"' label = 'Table 1' ).
+      tablenode->setcolumn( id = 'COL1' name = '<b>First column</b>' ).
+      tablenode->setcolumn( id = 'COL2' name = '<b>Second column</b>' ).
+      tablenode->setcolumn( id = 'COL3' ).
+      tablenode->setcell( columnid = 'COL1' row = 3 value = '3,1' ).
+      tablenode->setcell( columnid = 'COL3' row = 1 value = '1,3' ).
+
+      cellattrs = zcl_abap_graph_attr=>create( abap_true ).
       cellattrs->set( name = 'bgcolor' value = 'red' ).
-      partid3 = node4->setcell( columnid = 'COL2' row = 2 value = '2,2' attributes = cellattrs partid = 'central' ).
 
-      node1->linkto( destination = node2->id label = 'link' ).
-      node1->linkto( node3->id ).
-      node3->linkto( source = partid1 destination = partid2 color = 'red' label = 'link between record members'  ).
-      node2->linkto( partid2 ).
-      node1->linkto( node4->id ).
-      node3->linkto( destination = partid3
+      partid3 = tablenode->setcell( columnid = 'COL2' row = 2 value = '2,2' attributes = cellattrs partid = 'central' ).
+
+      simplenode1->linkto( destination = simplenode2->id label = 'link' ).
+      simplenode1->linkto( recordnode->id ).
+      recordnode->linkto( source = partid1 destination = partid2 color = 'red' label = 'link between cells'  ).
+      simplenode2->linkto( partid2 ).
+      simplenode1->linkto( tablenode->id ).
+      recordnode->linkto( destination = partid3
           color       = 'green'
           label       = 'to table center'
           source      = partid2 ).

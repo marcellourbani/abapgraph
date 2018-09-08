@@ -13,15 +13,15 @@ class zcl_abap_graph_attr definition public final create private .
                rankdir_horizontal type string value 'LR',
                rankdir_vertical   type string value 'TB'.
 
-    class-methods create
-      returning
-        value(r_result) type ref to zcl_abap_graph_attr.
-    methods: set importing name type string value(value) type string,
-             setraw importing name type string value type string,
-      render importing forhtml           type abap_bool optional
-             returning value(attrstring) type string.
+    class-methods create importing forhtml         type abap_bool optional
+                         returning value(r_result) type ref to zcl_abap_graph_attr.
+
+    methods: set importing value(name) type string value(value) type string,
+      setraw importing name type string value type string,
+      render returning value(attrstring) type string.
   private section.
-    data attributes type tt_attribute.
+    data: attributes type tt_attribute,
+          forhtml    type abap_bool.
 endclass.
 
 
@@ -31,12 +31,13 @@ class zcl_abap_graph_attr implementation.
   method create.
 
     create object r_result.
+    r_result->forhtml = forhtml.
 
   endmethod.
 
   method set.
-      value = zcl_abap_graph_utilities=>quoteifneeded( value ).
-      setraw( name = name value = value ).
+    value = zcl_abap_graph_utilities=>quoteifneeded( value ).
+    setraw( name = name value = value ).
   endmethod.
 
   method render.
