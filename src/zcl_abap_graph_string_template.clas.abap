@@ -208,7 +208,7 @@ CLASS ZCL_ABAP_GRAPH_STRING_TEMPLATE IMPLEMENTATION.
           condense var-value.
         when cl_abap_typedescr=>typekind_int
           or cl_abap_typedescr=>typekind_int1
-          or 8 " cl_abap_typedescr=>typekind_int8
+          or '8' " cl_abap_typedescr=>typekind_int8
           or cl_abap_typedescr=>typekind_int2
           or cl_abap_typedescr=>typekind_hex.
           var-value = value.
