@@ -51,11 +51,11 @@ class zcl_abap_graph_string_template definition public create public .
         !i_variablename type string
       returning
         value(r_result) type string .
-endclass.
+ENDCLASS.
 
 
 
-class zcl_abap_graph_string_template implementation.
+CLASS ZCL_ABAP_GRAPH_STRING_TEMPLATE IMPLEMENTATION.
 
 
   method create.
@@ -208,7 +208,7 @@ class zcl_abap_graph_string_template implementation.
           condense var-value.
         when cl_abap_typedescr=>typekind_int
           or cl_abap_typedescr=>typekind_int1
-          or cl_abap_typedescr=>typekind_int8
+          or 8 " cl_abap_typedescr=>typekind_int8
           or cl_abap_typedescr=>typekind_int2
           or cl_abap_typedescr=>typekind_hex.
           var-value = value.
@@ -232,4 +232,4 @@ class zcl_abap_graph_string_template implementation.
     collect varname into varnames.
 
   endmethod.
-endclass.
+ENDCLASS.
