@@ -121,7 +121,7 @@ class zcl_abap_graph_node_record implementation.
       comp = getcomp( <comp>-partid ).
       nameattr = <comp>-nameattributes->render( ).
       valueattr = <comp>-valueattributes->render( ).
-      agexpand '{temp}\n<tr><td{nameattributes}>{<comp>-name}</td><td{valueattributes}{comp}>{<comp>-value}</td></tr>' temp.
+      agexpand '{temp}\n<tr><td{nameattr}>{<comp>-name}</td><td{valueattr}{comp}>{<comp>-value}</td></tr>' temp.
     endloop.
     agexpand '{temp}\n</table>>' temp.
 
