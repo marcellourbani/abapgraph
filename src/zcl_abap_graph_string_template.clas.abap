@@ -201,8 +201,7 @@ CLASS ZCL_ABAP_GRAPH_STRING_TEMPLATE IMPLEMENTATION.
           or cl_abap_typedescr=>typekind_time
           or cl_abap_typedescr=>typekind_decfloat
           or cl_abap_typedescr=>typekind_decfloat16
-          or cl_abap_typedescr=>typekind_decfloat34
-          or cl_abap_typedescr=>typekind_float.
+          or cl_abap_typedescr=>typekind_decfloat34.
           write value to temp.
           var-value = temp.
           condense var-value.
